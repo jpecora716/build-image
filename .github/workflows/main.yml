@@ -97,10 +97,10 @@ jobs:
             exit 1
           fi
        
-      # Retrieve an authentication token and authenticate your Docker client to your registry
+      # Retrieve an authentication token and authenticate the Docker client to the registry
       - name: Docker authentication
-        run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 386650976415.dkr.ecr.us-east-1.amazonaws.com${{ steps.terraform.outputs.repo }}
+        run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ steps.terraform.outputs.repo }}
 
       # Push Image to Registry
-      - name: Run a one-line script
-        run: docker push 386650976415.dkr.ecr.us-east-1.amazonaws.com/my-app:v1
+      - name: Push image to ECR
+        run: docker push ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
