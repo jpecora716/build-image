@@ -1,36 +1,99 @@
-# This is a basic workflow to help you get started with Actions
-
-name: CI
+# This is a basic workflow to automate the creation of a Docker image
+name: create_and_scan_image
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+env:
+  APP: my-app
+  REGION: us-east-1
+  CLUSTER: my-eks-cluster
+  URL: https://cdn.twistlock.com/releases/K8ABPUqE/prisma_cloud_compute_edition_22_06_197.tar.gz
+  CONSOLE_ADDRESS: https://us-east1.cloud.twistlock.com/us-1-111573457
+  FOLDER: prisma_cloud_compute_edition_22_06_197
+  KUBE_NAMESPACE: prod
+
 jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_wrapper: false
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Run Terraform init
+        run: terraform init
+
+      - name: Terraform Apply
+        id: terraform
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          terraform apply -auto-approve
+          echo "::set-output name=repo::$(terraform output -raw ecr)"
+
+      - name: Configure AWS CLI Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Download twistcli
+        run: |
+          mkdir prisma_cloud_compute_edition
+
+          echo "----------------------------------------------------------------------"
+          echo "Downloading Prisma Cloud Compute tar file."
+
+          wget -O prisma_cloud_compute_edition.tar.gz -q $URL --no-check-certificate
+
+          if [ $? == 0 ]
+            then
+              echo "----------------------------------------------------------------------"
+              echo "Successfully downloaded Prisma Cloud Compute tar file."
+              echo "----------------------------------------------------------------------"
+              sleep 5
+            else
+              echo "----------------------------------------------------------------------"
+              echo "Failed to download Prisma Cloud Compute tar file."
+              echo "----------------------------------------------------------------------"
+              exit 1
+            fi
+
+          tar xvzf prisma_cloud_compute_edition.tar.gz -C prisma_cloud_compute_edition/
+
+      - name: Build Docker image
+        run: |
+          cd app/
+          docker build -t ${{ steps.terraform.outputs.repo }}/$APP:${{ github.run_number }} .
+
+      - name: Scan the image
+        run: |
+          cd ../prisma_cloud_compute_edition
+          ./linux/twistcli images scan --address https://$CONSOLE_ADDRESS --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}/$APP:${{ github.run_number }}
+
+          if [[ $? != 0 ]]
+          then
+            exit 1
+          fi
+       
+      # Retrieve an authentication token and authenticate your Docker client to your registry
+      - name: Docker authentication
+        run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 386650976415.dkr.ecr.us-east-1.amazonaws.com${{ steps.terraform.outputs.repo }}
+
+      # Push Image to Registry
+      - name: Run a one-line script
+        run: docker push 386650976415.dkr.ecr.us-east-1.amazonaws.com/my-app:v1
