@@ -87,6 +87,8 @@ jobs:
 
       - name: Scan the image
         run: |
+          pwd
+          ls -l
           cd ../prisma_cloud_compute_edition
           ./linux/twistcli images scan --address https://$CONSOLE_ADDRESS --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
 
