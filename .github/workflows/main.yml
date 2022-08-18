@@ -75,20 +75,13 @@ jobs:
 
           tar xvzf prisma_cloud_compute_edition.tar.gz -C prisma_cloud_compute_edition/
 
-          pwd
-          ls -l
-
       - name: Build Docker image
         run: |
           cd app/
           docker build -t ${{ steps.terraform.outputs.repo }}:${{ github.run_number }} .
-          docker image ls
-          pwd
 
       - name: Scan the image
         run: |
-          pwd
-          ls -l
           cd prisma_cloud_compute_edition/
           ./linux/twistcli images scan --address $CONSOLE_ADDRESS --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
 
