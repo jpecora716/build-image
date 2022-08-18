@@ -15,7 +15,7 @@ env:
   REGION: us-east-1
   CLUSTER: my-eks-cluster
   URL: https://cdn.twistlock.com/releases/K8ABPUqE/prisma_cloud_compute_edition_22_06_197.tar.gz
-  CONSOLE_ADDRESS: us-east1.cloud.twistlock.com/us-1-111573457
+  CONSOLE_ADDRESS: https://us-east1.cloud.twistlock.com/us-1-111573457
   FOLDER: prisma_cloud_compute_edition_22_06_197
   KUBE_NAMESPACE: prod
 
@@ -89,8 +89,8 @@ jobs:
         run: |
           pwd
           ls -l
-          cd ../prisma_cloud_compute_edition
-          ./linux/twistcli images scan --address https://$CONSOLE_ADDRESS --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
+          cd prisma_cloud_compute_edition/
+          ./linux/twistcli images scan --address $CONSOLE_ADDRESS --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
 
           if [ $? != 0 ]
           then
