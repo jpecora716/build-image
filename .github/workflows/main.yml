@@ -75,10 +75,14 @@ jobs:
 
           tar xvzf prisma_cloud_compute_edition.tar.gz -C prisma_cloud_compute_edition/
 
+          pwd
+
       - name: Build Docker image
         run: |
           cd app/
-          docker build -t ${{ steps.terraform.outputs.repo }}/$APP:${{ github.run_number }} .
+          docker build -t ${{ steps.terraform.outputs.repo }}:${{ github.run_number }} .
+          docker image ls
+          pwd
 
       - name: Scan the image
         run: |
