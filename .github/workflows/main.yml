@@ -15,7 +15,7 @@ env:
   REGION: us-east-1
   CLUSTER: my-eks-cluster
   URL: https://cdn.twistlock.com/releases/K8ABPUqE/prisma_cloud_compute_edition_22_06_197.tar.gz
-  CONSOLE_ADDRESS: https://us-east1.cloud.twistlock.com/us-1-111573457
+  CONSOLE_ADDRESS: https://a5c936d638fb342c19aaddd6ffba3602-938301532.us-east-1.elb.amazonaws.com:8083
   FOLDER: prisma_cloud_compute_edition_22_06_197
   KUBE_NAMESPACE: prod
 
