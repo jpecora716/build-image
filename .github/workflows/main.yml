@@ -16,8 +16,7 @@ env:
   CLUSTER: ba-eks-cluster-crmg
   URL: https://cdn.twistlock.com/releases/rzgp3OaZ/prisma_cloud_compute_edition_22_01_873.tar.gz
   CONSOLE_ADDRESS: https://ade15855cd68e4b7983d12dbb16ead24-714622747.us-east-1.elb.amazonaws.com:8083
-  FOLDER: prisma_cloud_compute_edition_22_01_873
-  KUBE_NAMESPACE: prod
+  FOLDER: prisma_cloud_compute_edition
 
 jobs:
   # This workflow contains a single job called "build"
