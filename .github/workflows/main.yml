@@ -14,28 +14,19 @@ env:
   APP: my-app
   REGION: us-east-1
   CLUSTER: ba-eks-cluster-crmg
+  URL: https://cdn.twistlock.com/releases/K8ABPUqE/prisma_cloud_compute_edition_22_06_197.tar.gz
+  # https://cdn.twistlock.com/releases/rzgp3OaZ/prisma_cloud_compute_edition_22_01_873.tar.gz
+  CONSOLE_ADDRESS: https://a39fa17b435db4ccb8ff4e7439b12ea7-46116206.us-east-1.elb.amazonaws.com:8083
   FOLDER: prisma_cloud_compute_edition
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.url.outputs.url }}
-      console: ${{ steps.console.outputs.console }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Read Environment Variables
-        uses: tw3lveparsecs/github-actions-setvars@v0.1
-        with:
-          envFilePath: ./myvars.env
-      - id: url
-        run: echo "::set-output name=url::${{ env.URL }}"
-      - id: console
-        run: echo "::set-output name=console::${{ env.CONSOLE_ADDRESS }}"
-
+  # This workflow contains a single job called "build"
   build:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
       - name: Setup Terraform
@@ -64,13 +55,10 @@ jobs:
         run: |
           mkdir prisma_cloud_compute_edition
 
-          echo "URL ${{ needs.setup.outputs.url }}"
-
           echo "----------------------------------------------------------------------"
           echo "Downloading twistcli"
 
-          wget -O prisma_cloud_compute_edition.tar.gz -q https://cdn.twistlock.com/releases/K8ABPUqE/prisma_cloud_compute_edition_22_06_197.tar.gz --no-check-certificate
-          # wget -O prisma_cloud_compute_edition.tar.gz -q ${{ needs.setup.outputs.url }} --no-check-certificate
+          wget -O prisma_cloud_compute_edition.tar.gz -q $URL --no-check-certificate
 
           if [ $? == 0 ]
             then
@@ -95,7 +83,7 @@ jobs:
       - name: Scan the image
         run: |
           cd prisma_cloud_compute_edition/
-          ./linux/twistcli images scan --address ${{ env.CONSOLE_ADDRESS }} --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
+          ./linux/twistcli images scan --address $CONSOLE_ADDRESS --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
 
           if [ $? != 0 ]
           then
