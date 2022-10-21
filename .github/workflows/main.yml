@@ -14,18 +14,28 @@ env:
   APP: my-app
   REGION: us-east-1
   CLUSTER: ba-eks-cluster-crmg
-  URL: https://cdn.twistlock.com/releases/rzgp3OaZ/prisma_cloud_compute_edition_22_01_873.tar.gz
-  CONSOLE_ADDRESS: https://ade15855cd68e4b7983d12dbb16ead24-714622747.us-east-1.elb.amazonaws.com:8083
   FOLDER: prisma_cloud_compute_edition
 
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  setup:
     runs-on: ubuntu-latest
-
+    outputs:
+      url: ${{ steps.ecr.outputs.url }}
+      console: ${{ steps.console.outputs.console }}
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      - name: Read Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+        with:
+          envFilePath: ./myvars.env
+      - id: url
+        run: echo "::set-output name=ecr::${{ env.URL }}"
+      - id: console
+        run: echo "::set-output name=console::${{ env.CONSOLE_ADDRESS }}"
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v3
 
       - name: Setup Terraform
@@ -57,7 +67,7 @@ jobs:
           echo "----------------------------------------------------------------------"
           echo "Downloading twistcli"
 
-          wget -O prisma_cloud_compute_edition.tar.gz -q $URL --no-check-certificate
+          wget -O prisma_cloud_compute_edition.tar.gz -q ${{ needs.setup.outputs.url }} --no-check-certificate
 
           if [ $? == 0 ]
             then
@@ -82,7 +92,7 @@ jobs:
       - name: Scan the image
         run: |
           cd prisma_cloud_compute_edition/
-          ./linux/twistcli images scan --address $CONSOLE_ADDRESS --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
+          ./linux/twistcli images scan --address ${{ needs.setup.outputs.console }} --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
 
           if [ $? != 0 ]
           then
