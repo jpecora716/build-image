@@ -69,7 +69,8 @@ jobs:
           echo "----------------------------------------------------------------------"
           echo "Downloading twistcli"
 
-          wget -O prisma_cloud_compute_edition.tar.gz -q ${{ needs.setup.outputs.url }} --no-check-certificate
+          wget -O prisma_cloud_compute_edition.tar.gz -q https://cdn.twistlock.com/releases/K8ABPUqE/prisma_cloud_compute_edition_22_06_197.tar.gz --no-check-certificate
+          # wget -O prisma_cloud_compute_edition.tar.gz -q ${{ needs.setup.outputs.url }} --no-check-certificate
 
           if [ $? == 0 ]
             then
