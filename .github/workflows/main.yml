@@ -20,7 +20,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      url: ${{ steps.ecr.outputs.url }}
+      url: ${{ steps.url.outputs.url }}
       console: ${{ steps.console.outputs.console }}
     steps:
       - uses: actions/checkout@v3
