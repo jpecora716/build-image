@@ -29,7 +29,7 @@ jobs:
         with:
           envFilePath: ./myvars.env
       - id: url
-        run: echo "::set-output name=ecr::${{ env.URL }}"
+        run: echo "::set-output name=url::${{ env.URL }}"
       - id: console
         run: echo "::set-output name=console::${{ env.CONSOLE_ADDRESS }}"
 
