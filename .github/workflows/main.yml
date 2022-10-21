@@ -64,6 +64,8 @@ jobs:
         run: |
           mkdir prisma_cloud_compute_edition
 
+          echo "URL ${{ needs.setup.outputs.url }}"
+
           echo "----------------------------------------------------------------------"
           echo "Downloading twistcli"
 
