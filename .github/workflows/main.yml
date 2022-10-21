@@ -95,7 +95,7 @@ jobs:
       - name: Scan the image
         run: |
           cd prisma_cloud_compute_edition/
-          ./linux/twistcli images scan --address ${{ needs.setup.outputs.console }} --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
+          ./linux/twistcli images scan --address ${{ env.CONSOLE_ADDRESS }} --user ${{ secrets.USER }} --password ${{ secrets.PASS }} --details ${{ steps.terraform.outputs.repo }}:${{ github.run_number }}
 
           if [ $? != 0 ]
           then
